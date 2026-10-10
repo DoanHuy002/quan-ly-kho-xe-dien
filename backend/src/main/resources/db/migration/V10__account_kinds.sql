@@ -1,0 +1,1 @@
+ALTER TABLE app_users ADD COLUMN account_kind VARCHAR(20) NOT NULL DEFAULT 'UNSET' CHECK (account_kind IN ('FACTORY','STORE','UNSET'));

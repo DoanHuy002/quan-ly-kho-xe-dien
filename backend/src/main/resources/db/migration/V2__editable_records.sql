@@ -1,0 +1,17 @@
+ALTER TABLE parts ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE suppliers ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE vehicle_models ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE stock_documents ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE bom_versions ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE production_orders ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE vehicles ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE vehicles ALTER COLUMN order_id DROP NOT NULL;
+ALTER TABLE vehicle_shipments ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE audit_log ADD COLUMN before_data CLOB;
+ALTER TABLE audit_log ADD COLUMN after_data CLOB;
+ALTER TABLE audit_log ADD COLUMN user_note VARCHAR(1000);
+ALTER TABLE audit_log ADD COLUMN archived BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE vehicle_shipment_lines RENAME TO vehicle_shipment_lines_v1;
+CREATE TABLE vehicle_shipment_lines(shipment_id BIGINT REFERENCES vehicle_shipments(id), vehicle_id BIGINT NOT NULL REFERENCES vehicles(id), PRIMARY KEY(shipment_id,vehicle_id));
+INSERT INTO vehicle_shipment_lines(shipment_id,vehicle_id) SELECT shipment_id,vehicle_id FROM vehicle_shipment_lines_v1;
+DROP TABLE vehicle_shipment_lines_v1;

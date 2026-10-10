@@ -1,0 +1,10 @@
+ALTER TABLE production_orders ADD COLUMN materials_issued BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE production_orders ADD COLUMN issued_at TIMESTAMP WITH TIME ZONE;
+UPDATE production_orders SET materials_issued=TRUE,issued_at=completed_at WHERE status='COMPLETED';
+ALTER TABLE production_order_lines ADD COLUMN planned_unit_cost DECIMAL(18,2);
+ALTER TABLE vehicle_receipts ADD COLUMN production_order_id BIGINT REFERENCES production_orders(id);
+ALTER TABLE vehicle_receipts ADD COLUMN receipt_date DATE DEFAULT CURRENT_DATE NOT NULL;
+UPDATE vehicle_receipts SET receipt_date=CAST(created_at AS DATE);
+ALTER TABLE stock_documents ADD COLUMN return_source_id BIGINT REFERENCES stock_documents(id);
+ALTER TABLE stock_documents ADD COLUMN return_date DATE;
+CREATE TABLE deleted_records(entity VARCHAR(40) NOT NULL,entity_id BIGINT NOT NULL,snapshot CLOB NOT NULL,deleted_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,PRIMARY KEY(entity,entity_id));

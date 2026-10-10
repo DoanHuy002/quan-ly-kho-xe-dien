@@ -1,0 +1,28 @@
+ALTER TABLE vehicles ADD COLUMN purchase_unit_cost DECIMAL(18,2) CHECK(purchase_unit_cost>=0);
+ALTER TABLE revenue_lines ADD COLUMN item_unit VARCHAR(100) NOT NULL DEFAULT 'Chiếc';
+UPDATE revenue_lines r SET item_unit=(SELECT p.unit FROM stock_document_lines l JOIN parts p ON p.id=l.part_id WHERE l.id=CAST(r.members AS BIGINT)) WHERE category='LK';
+ALTER TABLE stock_balances ADD COLUMN average_unit_cost DECIMAL(18,6) CHECK(average_unit_cost>=0);
+ALTER TABLE stock_movements ADD COLUMN unit_cost DECIMAL(18,6) CHECK(unit_cost>=0);
+ALTER TABLE stock_documents ADD COLUMN sales_purpose VARCHAR(20) NOT NULL DEFAULT 'INTERNAL' CHECK(sales_purpose IN ('INTERNAL','SALE'));
+ALTER TABLE stock_documents ADD COLUMN sale_channel VARCHAR(10) CHECK(sale_channel IN ('STORE','DEALER'));
+ALTER TABLE stock_documents ADD COLUMN party_code VARCHAR(80) NOT NULL DEFAULT '';
+ALTER TABLE stock_documents ADD COLUMN party_name VARCHAR(200) NOT NULL DEFAULT '';
+ALTER TABLE stock_documents ADD COLUMN phone VARCHAR(100) NOT NULL DEFAULT '';
+ALTER TABLE stock_documents ADD COLUMN province VARCHAR(200) NOT NULL DEFAULT '';
+ALTER TABLE stock_documents ADD COLUMN sale_date DATE;
+ALTER TABLE stock_documents ADD COLUMN discount DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(discount>=0);
+ALTER TABLE stock_documents ADD COLUMN support DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(support>=0);
+ALTER TABLE stock_documents ADD COLUMN transport_cost DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(transport_cost>=0);
+ALTER TABLE stock_documents ADD COLUMN transport_fee DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(transport_fee>=0);
+ALTER TABLE vehicle_shipments ADD COLUMN sale_channel VARCHAR(10) CHECK(sale_channel IN ('STORE','DEALER'));
+ALTER TABLE vehicle_shipments ADD COLUMN party_code VARCHAR(80) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipments ADD COLUMN province VARCHAR(200) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipments ADD COLUMN discount DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(discount>=0);
+ALTER TABLE vehicle_shipments ADD COLUMN support DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(support>=0);
+ALTER TABLE vehicle_shipments ADD COLUMN transport_cost DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(transport_cost>=0);
+ALTER TABLE vehicle_shipments ADD COLUMN transport_fee DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(transport_fee>=0);
+ALTER TABLE revenue_sales ADD COLUMN transport_cost DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(transport_cost>=0);
+ALTER TABLE revenue_sales ADD COLUMN transport_fee DECIMAL(18,2) NOT NULL DEFAULT 0 CHECK(transport_fee>=0);
+
+ALTER TABLE stock_document_lines ADD COLUMN sale_unit_price DECIMAL(18,2) CHECK(sale_unit_price>=0);
+ALTER TABLE revenue_lines ALTER COLUMN factory_unit_cost DECIMAL(18,6);

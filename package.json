@@ -1,0 +1,79 @@
+{
+  "name": "vinh-khang-warehouse",
+  "productName": "Vĩnh Khang Warehouse",
+  "version": "0.0.21",
+  "private": true,
+  "type": "module",
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.3",
+    "build": "vite build",
+    "start": "electron .",
+    "package": "vite build && electron-builder --win nsis --publish never",
+    "test": "node tests/smoke.cjs && node tests/crud.cjs && node tests/features.cjs",
+    "test:ui": "node tests/ui.cjs && node tests/crud-ui.cjs && node tests/features-ui.cjs && node tests/lifecycle.cjs",
+    "test:updates": "node tests/updates.cjs && node tests/updates-ui.cjs",
+    "package:usb": "vite build && electron-builder --config electron-builder.usb.json --win dir --publish never && \"C:/Users/Doan Huy/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe\" scripts/Patch-USB-Runtime.py"
+  },
+  "dependencies": {
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "electron-updater": "^6.6.2"
+  },
+  "devDependencies": {
+    "vite": "^7.1.0",
+    "electron": "44.5.1",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "vn.vinhkhang.warehouse",
+    "directories": {
+      "output": "releases"
+    },
+    "files": [
+      "dist/**",
+      "desktop/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "backend/target/warehouse-0.0.21.jar",
+        "to": "backend.jar"
+      },
+      {
+        "from": "runtime",
+        "to": "runtime"
+      },
+      {
+        "from": "desktop/app-update.yml",
+        "to": "app-update.yml"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "desktop/logo.ico",
+      "signAndEditExecutable": true,
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "installerIcon": "desktop/logo.ico",
+      "uninstallerIcon": "desktop/logo.ico",
+      "installerHeaderIcon": "desktop/logo.ico"
+    },
+    "artifactName": "VinhKhang-QLK-Setup-${version}.${ext}",
+    "publish": [
+      {
+        "repo": "quan-ly-kho-xe-dien",
+        "provider": "github",
+        "owner": "DoanHuy002",
+        "releaseType": "release",
+        "private": false
+      }
+    ]
+  },
+  "description": "Quản lý kho linh kiện và xe máy điện Vĩnh Khang",
+  "author": "Vĩnh Khang"
+}

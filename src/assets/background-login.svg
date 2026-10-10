@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+ <defs><linearGradient id="bg" x1="0" y1=".1" x2="1" y2=".9"><stop stop-color="#eef7ff"/><stop offset=".5" stop-color="#cce8ff"/><stop offset="1" stop-color="#95cbff"/></linearGradient></defs>
+ <path fill="url(#bg)" d="M0 0h1920v1080H0z"/>
+ <path d="M550 1080 1920 300v780Z" fill="#4ca9f6" opacity=".07"/>
+ <path d="M1030 1080 1920 590v490Z" fill="#0c85ec" opacity=".06"/>
+ <path d="M1330 1080 1920 760v320Z" fill="#0678d8" opacity=".055"/>
+ <text x="1890" y="930" text-anchor="end" fill="#fff" opacity=".18" font-family="Segoe UI,Arial,sans-serif" font-size="570" font-weight="900" font-style="italic" letter-spacing="-40">VK</text>
+</svg>

@@ -1,0 +1,16 @@
+ALTER TABLE vehicle_shipments ADD COLUMN shipment_date DATE;
+UPDATE vehicle_shipments SET shipment_date=CAST(created_at AS DATE);
+ALTER TABLE vehicle_shipments ADD COLUMN phone VARCHAR(100) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipments ADD COLUMN address VARCHAR(500) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipments ADD COLUMN reason VARCHAR(500) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipments ADD COLUMN accessories VARCHAR(500) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipments ADD COLUMN delivery_person VARCHAR(200) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipments ADD COLUMN recipient VARCHAR(200) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipments ADD COLUMN warehouse_keeper VARCHAR(200) NOT NULL DEFAULT '';
+ALTER TABLE vehicle_shipment_lines ADD COLUMN requested_quantity INTEGER NOT NULL DEFAULT 1 CHECK(requested_quantity>=1);
+ALTER TABLE vehicle_shipment_lines ADD COLUMN unit_price DECIMAL(18,2) CHECK(unit_price>=0);
+ALTER TABLE vehicle_shipment_lines ADD COLUMN item_code VARCHAR(100);
+ALTER TABLE vehicle_shipment_lines ADD COLUMN description VARCHAR(500);
+ALTER TABLE vehicle_shipment_lines ADD COLUMN frame_number VARCHAR(200);
+ALTER TABLE vehicle_shipment_lines ADD COLUMN motor_number VARCHAR(200);
+UPDATE vehicle_shipment_lines l SET item_code=(SELECT m.code FROM vehicles v JOIN vehicle_models m ON m.id=v.model_id WHERE v.id=l.vehicle_id),description=(SELECT m.name || ' - ' || v.color FROM vehicles v JOIN vehicle_models m ON m.id=v.model_id WHERE v.id=l.vehicle_id),frame_number=(SELECT v.frame_number FROM vehicles v WHERE v.id=l.vehicle_id),motor_number=(SELECT v.motor_number FROM vehicles v WHERE v.id=l.vehicle_id);

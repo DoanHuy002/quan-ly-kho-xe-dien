@@ -1,0 +1,15 @@
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),crypto=require('crypto');
+const root='D:/Codex/Projects/vinhkhang_QLK',{UsbUpdateManager,newer}=require(root+'/desktop/usb-updates.cjs'),data=root+'/work/usb-guards-'+Date.now();fs.mkdirSync(data,{recursive:true});
+const valid=JSON.parse(fs.readFileSync(root+'/outputs/QLK-VK-USB-0.6.5/usb-update.json'));
+const authorize=async(t,admin)=>{if(!['admin','viewer'].includes(t)||admin&&t!=='admin')throw Error('denied')};
+let corrupt=false,offline=false,backupValid=true;
+const m=new UsbUpdateManager({version:'0.6.4',root:data,dataDir:data,defaults:{url:'https://github.com/DoanHuy002/quan-ly-kho-xe-dien'},authorize,prepareInstall:async()=>{throw Error('Must not install')},quit:()=>{throw Error('Must not quit')},makeBackup:async()=>({file:'test',exported:'saved',hash:'a'}),validateBackup:()=>backupValid,fetcher:async(url)=>{if(offline)throw Error('offline');if(url.includes('api.github.com'))return new Response(JSON.stringify([{tag_name:'v9.9.9',assets:[{name:'usb-update.json'}]},{tag_name:'usb-v0.6.5',assets:[{name:'usb-update.json'}]},{tag_name:'usb-v8.9.0',draft:true,assets:[{name:'usb-update.json'}]}]));if(url.endsWith('json'))return new Response(JSON.stringify(corrupt?{...valid,kind:'windows-installer'}:valid));return new Response('corrupt zip')}});
+(async()=>{
+ assert(newer('0.6.5','0.6.4'));assert(!newer('0.6.4','0.6.5'));assert(!newer('evil','0.6.4'));
+ await m.check('viewer');assert.equal(m.snapshot().version,'0.6.5');assert.equal(m.snapshot().usbPortable,true);
+ await assert.rejects(m.download('viewer'),/denied/);await assert.rejects(m.download('admin'),/sao lưu/);await assert.rejects(m.install('admin'),/chưa tải/);
+ await m.backup('admin');assert(m.snapshot().backupReady);backupValid=false;await assert.rejects(m.download('admin'),/sao lưu/);backupValid=true;await m.backup('admin');m.backupTicket.time=Date.now()-31*60000;await assert.rejects(m.download('admin'),/sao lưu/);await m.backup('admin');await m.download('admin');assert.equal(m.snapshot().status,'error');assert.equal(m.downloaded,false);assert.equal(fs.existsSync(path.join(data,'Du-lieu')),false);
+ corrupt=true;await m.check('admin');assert.equal(m.snapshot().status,'error');assert.equal(m.snapshot().version,'');corrupt=false;offline=true;await m.check('admin');assert.equal(m.snapshot().status,'error');offline=false;m.state.currentVersion='0.6.5';await m.check('admin');assert.equal(m.snapshot().status,'current');assert.equal(m.snapshot().version,'');
+ for(const bad of [{...valid,url:'https://evil.test/update.zip'},{...valid,files:[...valid.files,'Du-lieu']},{...valid,url:valid.url.replace('usb-v','v')},{...valid,sha256:'bad'}])assert.throws(()=>m.validateManifest(bad,'0.6.5'));
+ console.log('PASS USB guards: separate release tags; Windows/draft ignored; admin-only; missing/tampered/expired backup blocked; corrupted download and wrong kind/URL/archive manifest rejected; offline and no downgrade');
+})().catch(e=>{console.error(e);process.exitCode=1});

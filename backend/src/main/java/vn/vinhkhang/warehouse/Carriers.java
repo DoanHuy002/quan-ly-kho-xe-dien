@@ -1,0 +1,13 @@
+package vn.vinhkhang.warehouse;
+import java.util.*;import org.springframework.web.bind.annotation.*;import org.springframework.jdbc.core.JdbcTemplate;import org.springframework.transaction.annotation.Transactional;
+@RestController @RequestMapping("/api/carriers") public class Carriers {
+ @ExceptionHandler(Api.Problem.class) org.springframework.http.ResponseEntity<?> problem(Api.Problem e){return core.problem(e);}
+ @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class) org.springframework.http.ResponseEntity<?> conflict(Exception e){return core.conflict(e);}
+ final Api core;final JdbcTemplate db;public Carriers(Api core,JdbcTemplate db){this.core=core;this.db=db;}
+ @GetMapping public List<Map<String,Object>> list(@RequestHeader(value="Authorization",required=false) String t){core.user(t,false);return db.queryForList("SELECT * FROM carriers WHERE deleted=FALSE ORDER BY name,id");}
+ @GetMapping("/{id}") public Map<String,Object> detail(@RequestHeader(value="Authorization",required=false) String t,@PathVariable long id){core.user(t,false);var rows=db.queryForList("SELECT * FROM carriers WHERE id=? AND deleted=FALSE",id);if(rows.isEmpty())throw new Api.Problem(404,"Không tìm thấy nhà xe");return rows.getFirst();}
+ String text(Map<String,Object>m,String k,int max,boolean required){return RevenueReports.text(m,k,max,required);}
+ @PostMapping @Transactional public Map<String,Long> create(@RequestHeader(value="Authorization",required=false) String t,@RequestBody Map<String,Object>m){var s=core.user(t,true);long id=core.insert("INSERT INTO carriers(code,name,phone,address,province,note) VALUES(?,?,?,?,?,?)",text(m,"code",80,true),text(m,"name",200,true),text(m,"phone",100,false),text(m,"address",500,false),text(m,"province",200,false),text(m,"note",500,false));core.audit(s,"CREATE","carriers",id);return Map.of("id",id);}
+ @PutMapping("/{id}") @Transactional public Map<String,Long> edit(@RequestHeader(value="Authorization",required=false) String t,@PathVariable long id,@RequestBody Map<String,Object>m){var s=core.user(t,true);detail(t,id);db.update("UPDATE carriers SET code=?,name=?,phone=?,address=?,province=?,note=? WHERE id=?",text(m,"code",80,true),text(m,"name",200,true),text(m,"phone",100,false),text(m,"address",500,false),text(m,"province",200,false),text(m,"note",500,false),id);core.audit(s,"UPDATE","carriers",id);return Map.of("id",id);}
+ @DeleteMapping("/{id}") @Transactional public void delete(@RequestHeader(value="Authorization",required=false) String t,@PathVariable long id){var s=core.user(t,true);detail(t,id);db.update("UPDATE carriers SET deleted=TRUE WHERE id=?",id);core.audit(s,"DELETE","carriers",id);}
+}

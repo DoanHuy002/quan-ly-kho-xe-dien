@@ -1,0 +1,38 @@
+{
+  "productName": "QLK VK USB",
+  "executableName": "QLK VK USB",
+  "appId": "vn.vinhkhang.warehouse.usb",
+  "extraMetadata": {
+    "usbPortable": true,
+    "version": "0.0.16"
+  },
+  "directories": {
+    "output": "releases/USB-0.0.16"
+  },
+  "win": {
+    "target": "dir",
+    "icon": "desktop/logo.ico",
+    "signAndEditExecutable": true,
+    "signExecutable": false
+  },
+  "publish": null,
+  "files": [
+    "dist/**",
+    "desktop/**",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": "backend/target/warehouse-0.0.16.jar",
+      "to": "backend.jar"
+    },
+    {
+      "from": "runtime",
+      "to": "runtime"
+    },
+    {
+      "from": "desktop/app-update.yml",
+      "to": "app-update.yml"
+    }
+  ]
+}

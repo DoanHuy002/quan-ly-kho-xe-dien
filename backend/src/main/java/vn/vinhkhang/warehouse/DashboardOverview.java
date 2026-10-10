@@ -1,0 +1,12 @@
+package vn.vinhkhang.warehouse;
+import java.util.*;import org.springframework.jdbc.core.JdbcTemplate;import org.springframework.web.bind.annotation.*;import org.springframework.transaction.annotation.Transactional;
+@RestController @RequestMapping("/api/dashboard") public class DashboardOverview {
+ final Api core;final JdbcTemplate db;public DashboardOverview(Api core,JdbcTemplate db){this.core=core;this.db=db;}
+ @GetMapping("/overview") @Transactional(readOnly=true) public Object overview(@RequestHeader("Authorization") String token){var actor=core.user(token,false);boolean factory=!AccountKinds.get(db,actor.id()).equals("STORE");
+ var lines=factory?db.queryForList("SELECT l.id,l.order_id,l.quantity,l.color,m.id model_id,m.code model_code,m.name model,(SELECT COUNT(*) FROM vehicles v WHERE v.production_line_id=l.id AND v.deleted=FALSE) received_quantity FROM production_order_lines l JOIN production_orders o ON o.id=l.order_id JOIN bom_versions b ON b.id=l.bom_id JOIN vehicle_models m ON m.id=b.model_id WHERE o.deleted=FALSE AND o.status='DRAFT' AND o.materials_issued=TRUE ORDER BY l.id"):List.of();
+ String sql="SELECT * FROM (SELECT 'documents' entity,d.id record_id,d.code,CASE WHEN d.return_source_id IS NOT NULL THEN 'Trả nhà cung cấp' WHEN d.type='IN' THEN 'Nhập linh kiện' ELSE 'Xuất linh kiện' END title,d.posted_at event_at,CAST(d.posted_at AS DATE) event_date,(SELECT COUNT(*) FROM stock_document_lines l WHERE l.document_id=d.id) quantity,'dòng linh kiện' unit FROM stock_documents d WHERE d.deleted=FALSE AND d.status='POSTED' UNION ALL SELECT 'receipts',r.id,r.code,'Nhập xe',r.created_at,r.receipt_date,(SELECT COUNT(*) FROM vehicles v WHERE v.receipt_id=r.id AND v.deleted=FALSE),'xe' FROM vehicle_receipts r WHERE r.deleted=FALSE UNION ALL SELECT 'shipments',s.id,s.code,CASE WHEN s.shipment_purpose='INTERNAL' THEN 'Xuất xe nội bộ' WHEN s.shipment_purpose='CONSIGNMENT' THEN 'Xuất xe ký gửi' ELSE 'Xuất xe cho khách' END,s.created_at,s.shipment_date,(SELECT COUNT(*) FROM vehicle_shipment_lines l WHERE l.shipment_id=s.id),'xe' FROM vehicle_shipments s WHERE s.deleted=FALSE";
+ if(factory)sql+=" UNION ALL SELECT 'production',p.id,p.code,'Phát lệnh sản xuất',p.issued_at,CAST(p.issued_at AS DATE),p.quantity,'xe theo lệnh' FROM production_orders p WHERE p.deleted=FALSE AND p.materials_issued=TRUE";
+ sql+=") recent ORDER BY event_at DESC,record_id DESC FETCH FIRST 8 ROWS ONLY";
+ return Map.of("production_lines",lines,"activity",db.queryForList(sql));
+ }
+}

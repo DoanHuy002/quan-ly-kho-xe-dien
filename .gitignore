@@ -1,0 +1,16 @@
+node_modules/
+dist/
+backend/target/
+data/
+backups/
+outputs/
+releases/
+runtime/
+work/
+.test*/
+*.log
+*.mv.db
+*.sqlite*
+*.zip
+credentials.txt
+.env*
