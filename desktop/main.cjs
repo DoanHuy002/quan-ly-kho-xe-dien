@@ -174,6 +174,7 @@ async function saveFile(bytes, name, filters) {
   }
   fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, bytes); return { canceled: false, file };
 }
+require('./section-backup.cjs').installSectionBackup({ipcMain,dialog,mainWindow:()=>mainWindow,authorize,transport,baseUrl:()=>baseUrl,saveFile,maintenance:()=>maintenance,active:n=>{activeRequests+=n;}});
 ipcMain.handle('exportExcel', async (_e, { entity, token, ids, archived }) => {
   if (!/^[a-z]+$/.test(entity)) throw Error('Mục xuất không hợp lệ');
   if(ids&&(!Array.isArray(ids)||!ids.length||ids.length>1000||ids.some(id=>!Number.isSafeInteger(id)||id<1)))throw Error('Danh sách xuất không hợp lệ');
