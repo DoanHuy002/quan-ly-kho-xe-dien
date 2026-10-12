@@ -1,7 +1,7 @@
 {
   "name": "vinh-khang-warehouse",
   "productName": "Vĩnh Khang Warehouse",
-  "version": "0.0.23",
+  "version": "0.0.24",
   "private": true,
   "type": "module",
   "main": "desktop/main.cjs",
@@ -37,7 +37,7 @@
     ],
     "extraResources": [
       {
-        "from": "backend/target/warehouse-0.0.23.jar",
+        "from": "backend/target/warehouse-0.0.24.jar",
         "to": "backend.jar"
       },
       {

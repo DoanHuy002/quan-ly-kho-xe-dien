@@ -29,7 +29,8 @@ async function startBackend() {
   const java = app.isPackaged ? path.join(process.resourcesPath, 'runtime/bin/java.exe') : fs.readdirSync('D:/Codex/Tools/java').map(n => path.join('D:/Codex/Tools/java', n, 'bin/java.exe')).find(fs.existsSync);
   const version = require('../package.json').version;
   const jar = app.isPackaged ? path.join(process.resourcesPath, 'backend.jar') : path.join(__dirname, `../backend/target/warehouse-${version}.jar`);
-  const sockets = path.join(data, 'sockets'); fs.mkdirSync(sockets, { recursive: true });
+  const socketRoot = fs.existsSync('D:/') ? 'D:/Codex/Tools/warehouse-sockets' : path.join(process.env.ProgramData || app.getPath('temp'), 'VinhKhangSockets');
+  const sockets = path.join(socketRoot, crypto.createHash('sha256').update(path.resolve(data)).digest('hex').slice(0,12)); fs.mkdirSync(sockets, { recursive: true });
   if (fs.existsSync(path.join(data, 'warehouse.mv.db'))) {
     const backups = path.join(data, 'backups'); fs.mkdirSync(backups, { recursive: true });
     fs.copyFileSync(path.join(data, 'warehouse.mv.db'), path.join(backups, 'warehouse-' + Date.now() + '.mv.db'));

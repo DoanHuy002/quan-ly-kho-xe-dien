@@ -12,7 +12,7 @@ export default function StockPage({assignGroup,purgeParts,initialSearch='',parts
  const partRows=parts.filter(matches),groups=new Map();
  for(const vehicle of vehicles.filter(v=>v.STATUS==='AVAILABLE')){
   const key=JSON.stringify([vehicle.MODEL_ID,vehicle.COLOR,vehicle.VEHICLE_TYPE]);
-  if(!groups.has(key)){const model=models.find(m=>m.ID===vehicle.MODEL_ID);groups.set(key,{key,code:model?.CODE||'—',model:vehicle.MODEL,color:vehicle.COLOR,type:type(vehicle.VEHICLE_TYPE),items:[]})}
+  if(!groups.has(key)){const model=models.find(m=>m.ID===vehicle.MODEL_ID);groups.set(key,{key,code:model?.CODE||'—',model:vehicle.MODEL,color:vehicle.COLOR||'Chưa bổ sung',type:type(vehicle.VEHICLE_TYPE),items:[]})}
   groups.get(key).items.push(vehicle);
  }
  const vehicleRows=[...groups.values()].filter(r=>matches({code:r.code,model:r.model,color:r.color,type:r.type}));
@@ -33,6 +33,6 @@ export default function StockPage({assignGroup,purgeParts,initialSearch='',parts
  <p className="hint">Sắt gồm cơ khí, nhôm và cao su. Mỗi mã linh kiện chỉ xuất hiện trong một nhóm, dùng đúng số tồn hiện có.</p>
  <div className="grouped-columns three">{materialGroups.map(([id,label])=>{const items=partRows.filter(p=>p.MATERIAL_GROUP===id);return <section className={'grouped-panel group-'+id} aria-label={'Tồn '+label} key={id}><div className="grouped-heading"><h3>{label}</h3><small>{items.length} mã</small></div>{partTable(items,label)}</section>})}</div>
  {partRows.some(p=>!materialGroups.some(([id])=>id===p.MATERIAL_GROUP))&&<details open className="unassigned-parts"><summary>Chưa phân nhóm</summary>{partTable(partRows.filter(p=>!materialGroups.some(([id])=>id===p.MATERIAL_GROUP)),'chưa phân nhóm')}</details>}</section>
- {detail&&<div className="modal-overlay"><div className="modal" role="dialog" aria-label="Chi tiết tồn xe"><div className="modal-header"><h2>{detail.model} · {detail.color} · {detail.type}</h2><button className="ghost" onClick={()=>setDetail(null)}>Đóng</button></div><div className="table-wrap"><table><thead><tr><th>ID xe</th><th>Số khung</th><th>Số máy</th><th>Giá nhập / giá vốn</th>{write&&<th>Thao tác</th>}</tr></thead><tbody>{detail.items.map(v=><tr key={v.ID}><td>{v.ID}</td><td>{v.FRAME_NUMBER||'—'}</td><td>{v.MOTOR_NUMBER||'—'}</td><td>{number(v.PURCHASE_UNIT_COST)}</td>{write&&<td><button className="ghost" onClick={()=>{setDetail(null);editVehicle(v)}}>Sửa xe</button></td>}</tr>)}</tbody></table></div></div></div>}
+ {detail&&<div className="modal-overlay"><div className="modal" role="dialog" aria-label="Chi tiết tồn xe"><div className="modal-header"><h2>{detail.model} · {detail.color} · {detail.type}</h2><button className="ghost" onClick={()=>setDetail(null)}>Đóng</button></div><div className="table-wrap"><table><thead><tr><th>ID xe</th><th>Số khung</th><th>Số máy</th><th>Giá nhập / giá vốn</th>{write&&<th>Thao tác</th>}</tr></thead><tbody>{detail.items.map(v=><tr key={v.ID}><td>{v.ID}</td><td>{v.FRAME_NUMBER||'Chưa bổ sung'}</td><td>{v.MOTOR_NUMBER||'Chưa bổ sung'}</td><td>{number(v.PURCHASE_UNIT_COST)}</td>{write&&<td><button className="ghost" onClick={()=>{setDetail(null);editVehicle(v)}}>Sửa xe</button></td>}</tr>)}</tbody></table></div></div></div>}
  </>;
 }

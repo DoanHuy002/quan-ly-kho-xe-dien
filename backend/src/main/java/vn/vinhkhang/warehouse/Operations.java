@@ -120,7 +120,7 @@ public class Operations {
     public Object createVehicle(@RequestHeader(value="Authorization",required=false) String t,@RequestBody Map<String,Object> m) {
         var s=core.user(t,true);core.active("vehicle_models",core.num(m,"model_id"));
         long id=core.insert("INSERT INTO vehicles(model_id,color,vehicle_type,frame_number,motor_number,purchase_unit_cost) VALUES(?,?,?,?,?,?)",
-            core.num(m,"model_id"),core.str(m,"color"),VehicleTypes.type(m),VehicleTypes.serial(core,m,"frame_number"),VehicleTypes.serial(core,m,"motor_number"),RevenueReports.money(m,"purchase_unit_cost",false));
+            core.num(m,"model_id"),SalesShipments.optional(m,"color",60),VehicleTypes.type(m),VehicleTypes.serial(core,m,"frame_number"),VehicleTypes.serial(core,m,"motor_number"),RevenueReports.money(m,"purchase_unit_cost",true));
         history(s,"CREATE","vehicles",id,null,snapshot("vehicles",id),Objects.toString(m.get("reason"),"Nhập xe thành phẩm có sẵn"));return Map.of("id",id);
     }
 
@@ -171,10 +171,11 @@ public class Operations {
             }
             case "production" -> {ProductionLines.edit(core,db,t,id,old,m);}
             case "vehicles" -> {
-                if(old.get("PRODUCTION_LINE_ID")!=null&&(core.num(m,"model_id")!=((Number)old.get("MODEL_ID")).longValue()||!core.str(m,"color").equals(old.get("COLOR"))))throw new Problem(409,"Xe từ lệnh sản xuất giữ nguyên mẫu và màu theo linh kiện đã dùng");
+                if(old.get("PRODUCTION_LINE_ID")!=null&&(core.num(m,"model_id")!=((Number)old.get("MODEL_ID")).longValue()||!SalesShipments.optional(m,"color",60).equals(old.get("COLOR"))))throw new Problem(409,"Xe từ lệnh sản xuất giữ nguyên mẫu và màu theo linh kiện đã dùng");
                 if(old.get("STATUS").equals("SHIPPED"))core.admin(t);
                 if(core.num(m,"model_id")!=((Number)old.get("MODEL_ID")).longValue())core.active("vehicle_models",core.num(m,"model_id"));
-                db.update("UPDATE vehicles SET model_id=?,color=?,vehicle_type=?,frame_number=?,motor_number=?,purchase_unit_cost=? WHERE id=?",core.num(m,"model_id"),core.str(m,"color"),VehicleTypes.type(m),VehicleTypes.serial(core,m,"frame_number"),VehicleTypes.serial(core,m,"motor_number"),Costing.cost(m,"purchase_unit_cost"),id);
+                db.update("UPDATE vehicles SET model_id=?,color=?,vehicle_type=?,frame_number=?,motor_number=?,purchase_unit_cost=? WHERE id=?",core.num(m,"model_id"),SalesShipments.optional(m,"color",60),VehicleTypes.type(m),VehicleTypes.serial(core,m,"frame_number"),VehicleTypes.serial(core,m,"motor_number"),Costing.cost(m,"purchase_unit_cost"),id);
+                db.update("UPDATE vehicle_shipment_lines SET frame_number=?,motor_number=? WHERE vehicle_id=?",VehicleTypes.serial(core,m,"frame_number"),VehicleTypes.serial(core,m,"motor_number"),id);
             }
             case "shipments" -> {
                 core.admin(t);SalesShipments.validate(core,m);Set<Long> desired=new TreeSet<>();for(var v:core.lines(m,"vehicles"))if(!desired.add(core.num(v,"id")))throw new Problem(400,"Xe bị chọn trùng");
